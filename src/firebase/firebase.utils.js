@@ -12,6 +12,35 @@ const config = {
     measurementId: "G-0KJ48FPJ9W"
 };
 
+export const createUserProfileDocument = async (userAuth, additionalData) => {
+    // make sure that a user is signed in
+    if(!userAuth) {
+        console.log("User not signed in...")
+        return;
+    }
+
+    const ref = firestore.doc(`users/${userAuth.uid}`);
+    const snapshot = await ref.get();
+
+    if(!snapshot.exists) {
+        const { displayName, email } = userAuth;
+        const createdAt = new Date();
+        
+        try {
+            ref.set({
+                displayName,
+                email, 
+                createdAt,
+                ...additionalData
+            })
+        } catch(error) {
+            console.log('error creating user', error.message);
+        }
+    }
+
+    return ref;
+};
+
 firebase.initializeApp(config);
 
 // this gives us access to these firebase functions in other compononents
